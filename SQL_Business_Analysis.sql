@@ -152,5 +152,47 @@ having count(*) >=2 and max(
 
 					
 
-/* 39. '' */
-/* 40. '' */
+/* 39. 'Employes Order Count' */
+with oc as 
+(
+	select 
+			e.employeeid,
+			count(o.orderid) as "total"
+	from orders o
+	join employees e on e.employeeid = o.employeeid 
+	group by 1
+) 
+			
+select
+		oc."employeeid",
+		concat(e.firstname,' ', e.lastname) as "Full_Name",
+		count(o.orderid) as "Orders_Count",
+		concat(round(count(o.orderid)*100/sum("total"),2),'%') as "Percent_of_Total"
+from oc  
+join employees e on e.employeeid = oc.employeeid
+join orders o on o.employeeid =e.employeeid 
+group by 1,2
+order by employeeid 
+
+/* 40. 'Most Valuable Customer' */
+select
+		r.restaurantname,
+		sum(p.amount) as "Total_Ravenue",
+		count(o.orderid) as "Total_Orders",
+		round(avg(p.amount),2) as "AVG_Amount_per_Orders",
+		case 
+			when rank() over(order by avg(p.amount) desc) <= 3 then 'Top'
+			when rank() over(order by avg(p.amount) desc) <= 6 then 'Good'
+			when rank() over(order by avg(p.amount) desc) > 6 then 'Standard'
+		end as "Performance"
+from restaurants r 
+join orders o on o.restaurantid =r.restaurantid 
+join payments p on p.orderid =o.orderid
+group by 1 
+order by 1 
+
+
+
+
+
+
